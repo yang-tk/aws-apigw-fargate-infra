@@ -1,0 +1,11 @@
+build
+.gradle
+bin
+
+gradle
+build.gradle
+gradle.properties
+gradlew
+gradlew.bat
+micronaut-cli.yml
+settings.gradle

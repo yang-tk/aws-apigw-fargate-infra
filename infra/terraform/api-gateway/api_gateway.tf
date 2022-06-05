@@ -1,10 +1,11 @@
-# Create a RESTful API resource
+/*
+ * Create a REST API and configured as REGIONAL type for multi-region infrastructure
+ * Depends on the use cases can change to Edge Optimized and use
+ * Route53 and Health check for latency optimization
+ */
 resource "aws_api_gateway_rest_api" "main" {
   name = var.name
 
-  # Configured as REGIONAL type for multi-region infrastructure
-  # Depends on the use cases can change to Edge Optimized and use
-  # Route53 and Helath check to handle latency reduction
   endpoint_configuration {
     types = ["REGIONAL"]
   }
@@ -16,16 +17,20 @@ resource "aws_api_gateway_resource" "main" {
   path_part   = var.path_part
 }
 
-# Create an API Gateway API Key for authentication
+/*
+ * Create an API Key for authentication
+ */
 resource "aws_api_gateway_api_key" "main" {
   name        = "${var.name}-api-keys"
   description = "API authentication key for ${var.name}"
   enabled     = true
 }
 
-# Provides a HTTP method for the API gateway resource
-# For API methods integration, we are using API Gateway Proxy which
-# acts as a gateway between our backend services
+/*
+ * Provides a HTTP method integration for the API gateway resource
+ * For API methods integration, we are using API Gateway Proxy which
+ * acts as a gateway between our backend services
+ */
 resource "aws_api_gateway_method" "main" {
   rest_api_id      = aws_api_gateway_rest_api.main.id
   resource_id      = aws_api_gateway_resource.main.id
@@ -38,7 +43,6 @@ resource "aws_api_gateway_method" "main" {
   }
 }
 
-# HTTP method integration for the API gateway integration
 resource "aws_api_gateway_integration" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
   resource_id = aws_api_gateway_resource.main.id
@@ -56,7 +60,9 @@ resource "aws_api_gateway_integration" "main" {
   connection_id   = aws_api_gateway_vpc_link.this.id
 }
 
-# Deploy API gateway
+/*
+ * Deploy API gateway to stage (e.g. dev02-us-east-1)
+ */
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
   stage_name  = "${var.stage}-${var.aws_region}"
@@ -71,8 +77,12 @@ resource "aws_api_gateway_deployment" "main" {
   }
 }
 
-# API custom domain name
-resource "aws_api_gateway_domain_name" "domain" {
+/*
+ * Create a custom domain name for API gateway and mapping the API gateway to the custom domain
+ * Use Route 53 to route traffic to the regional API endpoint
+ * The ACM certificate is region specific
+ */
+resource "aws_api_gateway_domain_name" "custom_domain" {
   domain_name             = var.domain_name
   regional_certificate_arn = var.certificate_arn
 
@@ -81,36 +91,36 @@ resource "aws_api_gateway_domain_name" "domain" {
   }
 }
 
-# Mapping API gateway to the custom domain
 resource "aws_api_gateway_base_path_mapping" "base_path" {
   api_id      = aws_api_gateway_rest_api.main.id
-  domain_name = aws_api_gateway_domain_name.domain.domain_name
+  domain_name = aws_api_gateway_domain_name.custom_domain.domain_name
   stage_name  = "${var.stage}-${var.aws_region}"
 
   depends_on = [
     aws_api_gateway_deployment.main,
-    aws_api_gateway_domain_name.domain
+    aws_api_gateway_domain_name.custom_domain
   ]
 }
 
-# Router 53 redirect
-resource "aws_route53_record" "subdomain" {
-  name    = aws_api_gateway_domain_name.domain.domain_name
+resource "aws_route53_record" "main" {
+  name    = aws_api_gateway_domain_name.custom_domain.domain_name
   type    = "A"
   zone_id = var.zone_id
 
   alias {
     evaluate_target_health = true
-    name                   = aws_api_gateway_domain_name.domain.regional_domain_name
-    zone_id                = aws_api_gateway_domain_name.domain.regional_zone_id
+    name                   = aws_api_gateway_domain_name.custom_domain.regional_domain_name
+    zone_id                = aws_api_gateway_domain_name.custom_domain.regional_zone_id
   }
 
   depends_on = [
-    aws_api_gateway_domain_name.domain
+    aws_api_gateway_domain_name.custom_domain
   ]
 }
 
-# API Usage Plan to use API key
+/*
+ * Create a API usage plan and attach the API key to the plan
+ */
 resource "aws_api_gateway_usage_plan" "main" {
   name         = "${var.name}-api-usage-plan"
   description  = "API usage plan for ${var.stage} environment"
@@ -131,7 +141,6 @@ resource "aws_api_gateway_usage_plan" "main" {
   ]
 }
 
-# Attach the generated API key to the usage plan
 resource "aws_api_gateway_usage_plan_key" "main" {
   key_id        = aws_api_gateway_api_key.main.id
   key_type      = "API_KEY"

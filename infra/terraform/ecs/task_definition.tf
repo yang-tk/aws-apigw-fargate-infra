@@ -1,6 +1,8 @@
-# ECS Fargate running task definition
-# [environment] variable will be stored in the Fargate container and can be pulled
-# with System.env under backend services
+/*
+ * ECS Fargate running task definition
+ * [environment] variable will be stored in the Fargate container and can be pulled
+ * with System.env
+ */
 resource "aws_ecs_task_definition" "main" {
   family                   = var.name
   task_role_arn            = aws_iam_role.task_role.arn
@@ -39,7 +41,7 @@ resource "aws_ecs_task_definition" "main" {
           awslogs-group : var.name,
           awslogs-region : var.aws_region,
           awslogs-create-group : "true",
-          awslogs-stream-prefix : "${var.name}-ecs-logs"
+          awslogs-stream-prefix : "${var.name}-logs"
         }
       }
     }

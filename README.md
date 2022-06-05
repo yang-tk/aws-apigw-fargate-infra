@@ -4,6 +4,8 @@ An reusable AWS infrastructure with multi-region support for building HTTP API b
 
 > The backend service under `src` folder is using micronaut framework, which is used for demo purpose.
 
+<img src="system.png" alt="system architecture"/>
+
 ## Infrasturcture State
 
 The `infra/environments` contains terrafrom state files for each specific region.

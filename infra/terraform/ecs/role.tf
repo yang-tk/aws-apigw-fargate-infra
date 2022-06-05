@@ -1,4 +1,8 @@
-# Task Role
+/*
+ * Create ECS task role and execution role
+ * Execution role need permissions to access S3, ECR and Cloudwatch
+ * Task role need permissions if need to integrate other AWS resources
+ */
 resource "aws_iam_role" "task_role" {
   name               = "${var.name}-ecs-task-role"
   assume_role_policy = <<EOF
@@ -18,7 +22,6 @@ resource "aws_iam_role" "task_role" {
 EOF
 }
 
-# Execution IAM role
 resource "aws_iam_role" "main_ecs_tasks" {
   name               = "${var.name}-ecs-execution-role"
   assume_role_policy = <<EOF
@@ -38,7 +41,6 @@ resource "aws_iam_role" "main_ecs_tasks" {
 EOF
 }
 
-# Task role policy to access other AWS resources
 resource "aws_iam_role_policy" "task_role" {
   name = "${var.name}-ecs-task-policy"
   role = aws_iam_role.task_role.id
@@ -53,9 +55,7 @@ resource "aws_iam_role_policy" "task_role" {
               "*"
             ],
             "Action": [
-                "dynamodb:*",
-                "s3:Get*",
-                "s3:List*",
+                "dynamodb:*"
             ]
         }
     ]
@@ -63,9 +63,8 @@ resource "aws_iam_role_policy" "task_role" {
 EOF
 }
 
-# Execution role policy to access ECR docker image and cloudwatch logs
 resource "aws_iam_role_policy" "main_ecs_tasks" {
-  name = "${var.name}-execution-policy"
+  name = "${var.name}-ecs-execution-policy"
   role = aws_iam_role.main_ecs_tasks.id
 
   policy = <<EOF
@@ -76,23 +75,14 @@ resource "aws_iam_role_policy" "main_ecs_tasks" {
             "Effect": "Allow",
             "Action": [
                 "s3:Get*",
-                "s3:List*"
-            ],
-            "Resource": ["*"]
-        },
-        {
-            "Effect": "Allow",
-            "Resource": [
-              "*"
-            ],
-            "Action": [
-                "dynamodb:*",
+                "s3:List*",
                 "ecr:*",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents",
                 "logs:CreateLogGroup",
                 "logs:DescribeLogStreams"
-            ]
+            ],
+            "Resource": ["*"]
         }
     ]
 }

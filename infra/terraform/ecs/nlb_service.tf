@@ -1,4 +1,8 @@
-# Network load balancer
+/*
+ * Create an Network Load Balancer to distribute client requests
+ * The listener will forward requests to the target groups
+ * Target group will route traffic to registered target groups
+ */
 resource "aws_lb" "nlb" {
   name               = "${var.name}-nlb"
   internal           = true
@@ -10,19 +14,6 @@ resource "aws_lb" "nlb" {
   tags = var.tags
 }
 
-# Target groups for register targets
-resource "aws_lb_target_group" "nlb_tg" {
-  depends_on = [
-    aws_lb.nlb
-  ]
-  name        = "${var.stage}-nlb-tg"
-  port        = var.app_port
-  protocol    = "TCP"
-  vpc_id      = var.vpc_id
-  target_type = "ip"
-}
-
-# Forward listener
 resource "aws_lb_listener" "nlb_listener" {
   load_balancer_arn = aws_lb.nlb.id
   port              = var.app_port
@@ -32,4 +23,16 @@ resource "aws_lb_listener" "nlb_listener" {
     target_group_arn = aws_lb_target_group.nlb_tg.id
     type             = "forward"
   }
+}
+
+resource "aws_lb_target_group" "nlb_tg" {
+  name        = "${var.stage}-nlb-tg"
+  port        = var.app_port
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  depends_on = [
+    aws_lb.nlb
+  ]
 }

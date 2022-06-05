@@ -1,4 +1,6 @@
-# ECS Fargate service
+/*
+ * Create ECS service with Fargate (serverless computing)
+ */
 resource "aws_ecs_service" "main" {
   name            = var.name
   cluster         = aws_ecs_cluster.main.id

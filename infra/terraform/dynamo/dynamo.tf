@@ -1,11 +1,13 @@
-# Create a dynamodb table
+/*
+ * Create a dynamodb table
+ */
 resource "aws_dynamodb_table" "main" {
   name         = var.table_name
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "userId"
+  hash_key     = "UserId"
 
   attribute {
-    name = "userId"
+    name = "UserId"
     type = "S"
   }
 

@@ -2,7 +2,7 @@
  * Create ECS service with Fargate (serverless computing)
  */
 resource "aws_ecs_service" "main" {
-  name            = var.name
+  name            = var.app_name
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.main.family
   desired_count   = var.app_count
@@ -21,7 +21,7 @@ resource "aws_ecs_service" "main" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.nlb_tg.arn
-    container_name   = var.name
+    container_name   = var.app_name
     container_port   = var.app_port
   }
 

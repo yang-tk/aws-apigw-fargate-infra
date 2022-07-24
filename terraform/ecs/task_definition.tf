@@ -4,7 +4,7 @@
  * with System.env
  */
 resource "aws_ecs_task_definition" "main" {
-  family                   = var.name
+  family                   = var.app_name
   task_role_arn            = aws_iam_role.task_role.arn
   execution_role_arn       = aws_iam_role.main_ecs_tasks.arn
   network_mode             = "awsvpc"
@@ -13,7 +13,7 @@ resource "aws_ecs_task_definition" "main" {
   memory                   = var.fargate_memory
   container_definitions = jsonencode([
     {
-      name : var.name,
+      name : var.app_name,
       image : var.app_image,
       cpu : var.fargate_cpu,
       memory : var.fargate_memory,
@@ -38,10 +38,10 @@ resource "aws_ecs_task_definition" "main" {
       logConfiguration : {
         logDriver : "awslogs",
         options : {
-          awslogs-group : var.name,
+          awslogs-group : var.app_name,
           awslogs-region : var.aws_region,
           awslogs-create-group : "true",
-          awslogs-stream-prefix : "${var.name}-logs"
+          awslogs-stream-prefix : "${var.app_name}-logs"
         }
       }
     }

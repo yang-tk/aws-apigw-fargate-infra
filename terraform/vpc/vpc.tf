@@ -3,10 +3,6 @@ resource "aws_vpc" "custom_vpc" {
   cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
-
-  tags = {
-    Name = "${var.vpc_tag_name}-${var.stage}"
-  }
 }
 
 # Internet Gateway
@@ -66,8 +62,7 @@ resource "aws_security_group" "default" {
 
 # Network load balancer security group
 resource "aws_security_group" "lb" {
-  name        = "${var.security_group_lb_name}-${var.stage}"
-  description = var.security_group_lb_description
+  name        = "${var.app_name}-nlb-sg"
   vpc_id      = aws_vpc.custom_vpc.id
 
   ingress {
@@ -88,8 +83,7 @@ resource "aws_security_group" "lb" {
 # ECS task security group
 # Traffic to the ECS Cluster should only come from the network load balancer or AWS services through an AWS PrivateLink
 resource "aws_security_group" "ecs_tasks" {
-  name        = "${var.security_group_ecs_tasks_name}-${var.stage}"
-  description = var.security_group_ecs_tasks_description
+  name        = "${var.app_name}-ecs-sg"
   vpc_id      = aws_vpc.custom_vpc.id
 
   ingress {

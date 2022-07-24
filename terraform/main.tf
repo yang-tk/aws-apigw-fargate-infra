@@ -1,4 +1,3 @@
-# Terraform setup
 terraform {
   backend "http" {
   }
@@ -23,7 +22,7 @@ provider "aws" {
 # Application setup
 locals {
   app_name          = "appname-${var.stage}-${var.aws_region}"
-  app_domain_name   = "servicename.companyname.com"
+  app_domain_name   = "service-name.company-name.com"
   app_port          = 8080
   app_count         = "1"
 }
@@ -44,18 +43,12 @@ module "ecr" {
 module "vpc" {
   source = "./vpc"
 
+  app_name = local.app_name
+
   stage                     = var.stage
   app_port                  = local.app_port
   availability_zones        = var.availability_zones
   region                    = var.aws_region
-  number_of_private_subnets = 2
-
-  vpc_tag_name                  = "${local.app_name}-vpc"
-  private_subnet_tag_name       = "${local.app_name}-private-subnet"
-  route_table_tag_name          = "${local.app_name}-rt"
-  security_group_lb_name        = "${local.app_name}-alb-sg"
-  security_group_ecs_tasks_name = "${local.app_name}-ecs-tasks-sg"
-
   tags = var.tags
 }
 
@@ -64,7 +57,7 @@ module "ecs" {
   source = "./ecs"
 
   # Task definition
-  name           = local.app_name
+  app_name           = local.app_name
   app_image      = var.app_image
   fargate_cpu    = 1024
   fargate_memory = 2048

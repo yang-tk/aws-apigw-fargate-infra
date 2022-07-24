@@ -3,7 +3,7 @@ variable "tags" {
   description = "Tags"
 }
 
-variable "name" {
+variable "app_name" {
   type        = string
   description = "The name of the application and the family"
 }

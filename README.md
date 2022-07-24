@@ -1,14 +1,12 @@
 # AWS ECS Fargate and API Gateway IaC
 
-An reusable AWS infrastructure with multi-region support for building HTTP API based microservices.
+An AWS infrastructure with multi-region/env/stage support for building scalable and performant microservices.
 
-> The backend service under `src` folder is using micronaut framework, which is used for demo purpose.
+<img src="doc/system.png" alt="system architecture"/>
 
-<img src="system.png" alt="system architecture"/>
+## Infrastructure State
 
-## Infrasturcture State
-
-The `infra/environments` contains terrafrom state files for each specific region.
+`config` folder contains terraform configuration files for each specific stage and region. The config file can be adjusted based on need, e.g. different fargate CPU for each stage.
 
 ```
 aws_region                   = "us-east-1"
@@ -23,19 +21,19 @@ hosted_zone_id               = ""                              // Route53 Hosted
 
 ## CI/CD Deployment
 
-The code below shows an example of using Gitlab pipeline to deploy the service. The script basically:
+The code below shows an example of using Gitlab pipeline to deploy the service, but most fargate deployment will follow these steps:
 
-- Apply terraform changes to AWS (In Gitlab, the state file is located under `Infrastructure > Terraform`)
-- Retrieve AWS credentials using assume role
-- Login to Docker
-- Built the docker image and deploy to ECR
-- Force a new deployment to ECS to fetch the latest ECR image
+1. Retrieve the infrastructure code remotely (optional if the infra code and the service are in the same repo)
+2. Apply to terraform changes to AWS (In Gitlab, the state file is located under `Infrastructure > Terraform`)
+3. Retrieve AWS credentials using assume role 
+4. Login to Docker 
+5. Build the docker image and deploy to ECR 
+6. Force a new deployment to ECS to fetch the latest ECR image
 
 ```yaml
-# ECS deployment script
 .deploy:
   variables:
-    TF_VARS_PATH: "../environments/dev/dev02/us-east-1-dev02.tfvars"      # The path that contains the terraform state file
+    TF_VARS_PATH: "../config/dev/dev02/us-east-1-dev02.tfvars"      # The path that contains to terraform state file
     ACCOUNT_NUMBER: "123456789"                                           # AWS account number
     DEPLOYMENT_ROLE_NAME: "OrganizationAccountAccessRole"                 # The IAM role used to retrieve AWS session tokens
     REGION: "us-east-1"

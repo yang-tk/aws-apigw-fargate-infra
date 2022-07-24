@@ -4,7 +4,7 @@
  * Target group will route traffic to registered target groups
  */
 resource "aws_lb" "nlb" {
-  name               = "${var.name}-nlb"
+  name               = "${var.app_name}-nlb"
   internal           = true
   load_balancer_type = "network"
   subnets            = var.private_subnet_ids

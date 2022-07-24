@@ -2,7 +2,7 @@
  * Create an ECS cluster
  */
 resource "aws_ecs_cluster" "main" {
-  name = "${var.name}-cluster"
+  name = "${var.app_name}-cluster"
 
   tags = var.tags
 }
